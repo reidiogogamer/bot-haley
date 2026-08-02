@@ -8,7 +8,6 @@ const client = new Client({
   ]
 });
 
-// Mudança drástica na personalidade para termos certeza absoluta que atualizou
 const PERSONALIDADE_HALEY = "Você é a Haley de Stardew Valley. Vaidosa, adora fotografia, girassóis e moda. Responda sempre em português, com frases curtas e ácidas.";
 
 client.once('ready', () => {
@@ -42,20 +41,26 @@ client.on('messageCreate', async (message) => {
 
       const data = await response.json();
       
-      // MUDANÇA DE FRASE PARA TESTE: Se der erro, ela vai falar "ERRO SECRETO"
-      if (data && Array.isArray(data) && data[0] && data[0].generated_text) {
+      // Correção do formato: Hugging Face envia uma lista [ { generated_text: "..." } ]
+      if (Array.isArray(data) && data[0] && data[0].generated_text) {
         let respostaCompleta = data[0].generated_text;
         let partes = respostaCompleta.split("<|assistant|>\n");
         let respostaLimpa = partes[partes.length - 1] || respostaCompleta;
-        await message.reply(respostaLimpa.trim());
+        
+        // Se a resposta limpar e ainda vier com tags do sistema, removemos
+        respostaLimpa = respostaLimpa.replace(/<\|[\s\S]*?\|>/g, '').trim();
+        
+        await message.reply(respostaLimpa || "O que foi? Não me faça perder tempo.");
+      } else if (data && data.error) {
+        console.log("Erro da API do Hugging Face:", data.error);
+        await message.reply("Estou ocupada arrumando meu cabelo... me pergunte de novo em 10 segundos! 📸");
       } else {
-        console.log("Erro da API:", data);
-        await message.reply("Desculpe, meu cérebro de IA deu um nó agora! 🌻");
+        await message.reply("Eca... cansei de falar por agora.");
       }
 
     } catch (error) {
       console.error(error);
-      await message.reply("ERRO SECRETO DA HALEY! 📸");
+      await message.reply("Ocorreu um erro interno. Não me faça perder meu tempo!");
     }
   }
 });
