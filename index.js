@@ -28,11 +28,11 @@ client.on('messageCreate', async (message) => {
     try {
       await message.channel.sendTyping();
       
-      // Conexão ultra rápida com o motor da Groq usando o modelo Llama 3
       const response = await axios.post(
-        "https://groq.com",
+        "https://api.groq.com/openai/v1/chat/completions",
         {
-          model: "llama3-8b-8192",
+          // ATUALIZADO: Usando o modelo oficial e ativo no sistema da Groq
+          model: "llama-3.1-8b-instant",
           messages: [
             { role: "system", content: PERSONALIDADE_HALEY },
             { role: "user", content: textoLimpo }
@@ -48,7 +48,7 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      if (response.data && response.data.choices && response.data.choices[0].message) {
+      if (response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
         const respostaIA = response.data.choices[0].message.content.trim();
         await message.reply(respostaIA);
       } else {
@@ -57,7 +57,7 @@ client.on('messageCreate', async (message) => {
 
     } catch (error) {
       console.error(error.response ? error.response.data : error.message);
-      await message.reply("Eca... meu rolo de filme travou. Me pergunte de novo! 📸🌻");
+      await message.reply("Eca... meu rolo de filme travou de verdade agora. Me pergunte de novo! 📸🌻");
     }
   }
 });
