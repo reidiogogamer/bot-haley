@@ -35,18 +35,25 @@ client.on('messageCreate', async (message) => {
         },
         body: JSON.stringify({
           inputs: `<|system|>\n${PERSONALIDADE_HALEY}\n<|user|>\n${textoLimpo}\n<|assistant|>\n`,
-          parameters: { max_new_tokens: 150, temperature: 0.7 }
+          parameters: { max_new_tokens: 150, temperature: 0.7 },
+          options: { wait_for_model: true } // ISSO OBRIGA A IA A ESPERAR O MODELO LIGAR
         })
       });
 
       const data = await response.json();
       
-      if (data && data[0] && data[0].generated_text) {
+      // Se a IA ainda estiver carregando, avisa o usuário de forma fofa
+      if (data && data.error && data.error.includes("loading")) {
+        return message.reply("Estou arrumando meu cabelo e minhas lentes de fotografia agora... me marque de novo em 10 segundos! 📸🌻");
+      }
+
+      if (Array.isArray(data) && data[0] && data[0].generated_text) {
         let respostaCompleta = data[0].generated_text;
         let partes = respostaCompleta.split("<|assistant|>\n");
         let respostaLimpa = partes[partes.length - 1] || respostaCompleta;
         await message.reply(respostaLimpa.trim());
       } else {
+        console.log("Resposta inesperada da API:", data);
         await message.reply("Eca... cansei de falar por agora. Volte mais tarde! 📸");
       }
 
