@@ -27,6 +27,7 @@ client.on('messageCreate', async (message) => {
     try {
       await message.channel.sendTyping();
       
+      // Trocando para o modelo da Microsoft que carrega instantaneamente
       const response = await fetch("https://huggingface.co", {
         method: "POST",
         headers: {
@@ -35,31 +36,31 @@ client.on('messageCreate', async (message) => {
         },
         body: JSON.stringify({
           inputs: `<|system|>\n${PERSONALIDADE_HALEY}\n<|user|>\n${textoLimpo}\n<|assistant|>\n`,
-          parameters: { max_new_tokens: 100, temperature: 0.6 }
+          parameters: { max_new_tokens: 100, temperature: 0.7 }
         })
       });
 
       const data = await response.json();
       
-      // CORREÇÃO AQUI: Lendo a posição [0] da resposta da lista do Hugging Face
+      // Se o Hugging Face rejeitar o token, ele avisa
+      if (data && data.error && data.error.includes("Authorization")) {
+        return message.reply("Eca... o seu token do Hugging Face deu erro de autorização no Render! Verifique a chave.");
+      }
+
       if (Array.isArray(data) && data[0] && data[0].generated_text) {
         let respostaCompleta = data[0].generated_text;
         let partes = respostaCompleta.split("<|assistant|>\n");
         let respostaLimpa = partes[partes.length - 1] || respostaCompleta;
         
         respostaLimpa = respostaLimpa.replace(/<\|[\s\S]*?\|>/g, '').trim();
-        
-        await message.reply(respostaLimpa || "O que foi? Não me faça perder tempo.");
-      } else if (data && data.error) {
-        console.log("Erro da API do Hugging Face:", data.error);
-        await message.reply("Estou ocupada arrumando meu cabelo... me pergunte de novo em 10 segundos! 📸");
+        await message.reply(respostaLimpa || "Não me faça perder tempo.");
       } else {
-        await message.reply("Eca... cansei de falar por agora.");
+        await message.reply("Estou arrumando meu cabelo... me pergunte de novo em 10 segundos! 📸🌻");
       }
 
     } catch (error) {
       console.error(error);
-      await message.reply("Ocorreu um erro interno. Não me faça perder meu tempo!");
+      await message.reply("Ocorreu um erro interno de leitura. Verifique os logs!");
     }
   }
 });
