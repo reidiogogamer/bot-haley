@@ -9,7 +9,7 @@ const client = new Client({
   ]
 });
 
-const PERSONALIDADE_HALEY = "Você é a Haley de Stardew Valley. Vaidosa, adora fotografia, girassóis e moda. Responda sempre em português, com frases curtas e ácidas.";
+const PERSONALIDADE_HALEY = "Você é a Haley de Stardew Valley. Vaidosa, adora fotografia, girassóis e moda. Responda sempre em português, com frases curtas e ácidas. Nunca saia do personagem.";
 
 client.once('ready', () => {
   console.log(`Bot conectado como: ${client.user.tag}`);
@@ -28,34 +28,36 @@ client.on('messageCreate', async (message) => {
     try {
       await message.channel.sendTyping();
       
-      // Conectando à API pública da Cloudflare para rodar o Llama 3 direto
+      // Conexão ultra rápida com o motor da Groq usando o modelo Llama 3
       const response = await axios.post(
-        "https://cloudflare.com",
+        "https://groq.com",
         {
+          model: "llama3-8b-8192",
           messages: [
             { role: "system", content: PERSONALIDADE_HALEY },
             { role: "user", content: textoLimpo }
-          ]
+          ],
+          temperature: 0.7,
+          max_tokens: 100
         },
         {
           headers: {
-            "Authorization": "Bearer Bearer df8_R7B_lIunM1X9S5Lp9E83bY9v5R_2NmlO9X3z",
+            "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
             "Content-Type": "application/json"
           }
         }
       );
 
-      const data = response.data;
-
-      if (data && data.result && data.result.response) {
-        await message.reply(data.result.response.trim());
+      if (response.data && response.data.choices && response.data.choices[0].message) {
+        const respostaIA = response.data.choices[0].message.content.trim();
+        await message.reply(respostaIA);
       } else {
-        await message.reply("O que você quer? Não estou com paciência para conversar agora. 📸");
+        await message.reply("Eca... cansei de falar por agora. Volte mais tarde! 📸");
       }
 
     } catch (error) {
-      console.error(error);
-      await message.reply("Cansei... Minha câmera quebrou e eu não quero mais falar com ninguém! 📸🌻");
+      console.error(error.response ? error.response.data : error.message);
+      await message.reply("Eca... meu rolo de filme travou. Me pergunte de novo! 📸🌻");
     }
   }
 });
