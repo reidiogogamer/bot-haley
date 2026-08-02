@@ -1,4 +1,5 @@
 const { Client, GatewayIntentBits } = require('discord.js');
+const axios = require('axios'); // Mudança para o Axios estável
 
 const client = new Client({
   intents: [
@@ -27,25 +28,22 @@ client.on('messageCreate', async (message) => {
     try {
       await message.channel.sendTyping();
       
-      // Trocando para o modelo da Microsoft que carrega instantaneamente
-      const response = await fetch("https://huggingface.co", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.HUGGINGFACE_TOKEN}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
+      // Fazendo a requisição usando Axios que não trava no Render
+      const response = await axios.post(
+        "https://huggingface.co",
+        {
           inputs: `<|system|>\n${PERSONALIDADE_HALEY}\n<|user|>\n${textoLimpo}\n<|assistant|>\n`,
           parameters: { max_new_tokens: 100, temperature: 0.7 }
-        })
-      });
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${process.env.HUGGINGFACE_TOKEN}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
 
-      const data = await response.json();
-      
-      // Se o Hugging Face rejeitar o token, ele avisa
-      if (data && data.error && data.error.includes("Authorization")) {
-        return message.reply("Eca... o seu token do Hugging Face deu erro de autorização no Render! Verifique a chave.");
-      }
+      const data = response.data;
 
       if (Array.isArray(data) && data[0] && data[0].generated_text) {
         let respostaCompleta = data[0].generated_text;
@@ -59,8 +57,13 @@ client.on('messageCreate', async (message) => {
       }
 
     } catch (error) {
-      console.error(error);
-      await message.reply("Ocorreu um erro interno de leitura. Verifique os logs!");
+      console.error("Erro detalhado:", error.response ? error.response.data : error.message);
+      
+      if (error.response && error.response.status === 401) {
+        return message.reply("Eca... o seu token do Hugging Face está com erro de digitação no Render!");
+      }
+      
+      await message.reply("Eca... cansei de falar por agora. Não me faça perder meu tempo! 📸");
     }
   }
 });
