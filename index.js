@@ -1,5 +1,5 @@
 const { Client, GatewayIntentBits } = require('discord.js');
-const axios = require('axios'); // Mudança para o Axios estável
+const axios = require('axios');
 
 const client = new Client({
   intents: [
@@ -28,9 +28,8 @@ client.on('messageCreate', async (message) => {
     try {
       await message.channel.sendTyping();
       
-      // Fazendo a requisição usando Axios que não trava no Render
       const response = await axios.post(
-        "https://huggingface.co",
+        "https://api-inference.huggingface.co/models/microsoft/Phi-3-mini-4k-instruct",
         {
           inputs: `<|system|>\n${PERSONALIDADE_HALEY}\n<|user|>\n${textoLimpo}\n<|assistant|>\n`,
           parameters: { max_new_tokens: 100, temperature: 0.7 }
@@ -44,26 +43,38 @@ client.on('messageCreate', async (message) => {
       );
 
       const data = response.data;
+      let respostaCompleta = "";
 
+      // TRATAMENTO UNIVERSAL: Lê o texto não importa o formato que o Hugging Face envie
       if (Array.isArray(data) && data[0] && data[0].generated_text) {
-        let respostaCompleta = data[0].generated_text;
+        respostaCompleta = data[0].generated_text;
+      } else if (data && data.generated_text) {
+        respostaCompleta = data.generated_text;
+      } else if (typeof data === 'string') {
+        respostaCompleta = data;
+      }
+
+      if (respostaCompleta) {
         let partes = respostaCompleta.split("<|assistant|>\n");
         let respostaLimpa = partes[partes.length - 1] || respostaCompleta;
         
+        // Remove tags estruturais remanescentes do modelo
         respostaLimpa = respostaLimpa.replace(/<\|[\s\S]*?\|>/g, '').trim();
+        
         await message.reply(respostaLimpa || "Não me faça perder tempo.");
       } else {
         await message.reply("Estou arrumando meu cabelo... me pergunte de novo em 10 segundos! 📸🌻");
       }
 
     } catch (error) {
-      console.error("Erro detalhado:", error.response ? error.response.data : error.message);
+      console.error("Erro detalhado do bot:", error.response ? error.response.data : error.message);
       
-      if (error.response && error.response.status === 401) {
-        return message.reply("Eca... o seu token do Hugging Face está com erro de digitação no Render!");
+      // Se a API responder um objeto de erro legível, mostramos uma parte dele para diagnóstico
+      if (error.response && error.response.data && error.response.data.error) {
+        return message.reply(`A IA enviou um alerta: ${error.response.data.error.slice(0, 50)}...`);
       }
       
-      await message.reply("Eca... cansei de falar por agora. Não me faça perder meu tempo! 📸");
+      await message.reply("Estou limpando minha lente da câmera... tente me marcar de novo! 📸");
     }
   }
 });
