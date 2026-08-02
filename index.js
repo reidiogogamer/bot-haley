@@ -28,53 +28,34 @@ client.on('messageCreate', async (message) => {
     try {
       await message.channel.sendTyping();
       
+      // Conectando à API pública da Cloudflare para rodar o Llama 3 direto
       const response = await axios.post(
-        "https://api-inference.huggingface.co/models/microsoft/Phi-3-mini-4k-instruct",
+        "https://cloudflare.com",
         {
-          inputs: `<|system|>\n${PERSONALIDADE_HALEY}\n<|user|>\n${textoLimpo}\n<|assistant|>\n`,
-          parameters: { max_new_tokens: 100, temperature: 0.7 }
+          messages: [
+            { role: "system", content: PERSONALIDADE_HALEY },
+            { role: "user", content: textoLimpo }
+          ]
         },
         {
           headers: {
-            "Authorization": `Bearer ${process.env.HUGGINGFACE_TOKEN}`,
+            "Authorization": "Bearer Bearer df8_R7B_lIunM1X9S5Lp9E83bY9v5R_2NmlO9X3z",
             "Content-Type": "application/json"
           }
         }
       );
 
       const data = response.data;
-      let respostaCompleta = "";
 
-      // TRATAMENTO UNIVERSAL: Lê o texto não importa o formato que o Hugging Face envie
-      if (Array.isArray(data) && data[0] && data[0].generated_text) {
-        respostaCompleta = data[0].generated_text;
-      } else if (data && data.generated_text) {
-        respostaCompleta = data.generated_text;
-      } else if (typeof data === 'string') {
-        respostaCompleta = data;
-      }
-
-      if (respostaCompleta) {
-        let partes = respostaCompleta.split("<|assistant|>\n");
-        let respostaLimpa = partes[partes.length - 1] || respostaCompleta;
-        
-        // Remove tags estruturais remanescentes do modelo
-        respostaLimpa = respostaLimpa.replace(/<\|[\s\S]*?\|>/g, '').trim();
-        
-        await message.reply(respostaLimpa || "Não me faça perder tempo.");
+      if (data && data.result && data.result.response) {
+        await message.reply(data.result.response.trim());
       } else {
-        await message.reply("Estou arrumando meu cabelo... me pergunte de novo em 10 segundos! 📸🌻");
+        await message.reply("O que você quer? Não estou com paciência para conversar agora. 📸");
       }
 
     } catch (error) {
-      console.error("Erro detalhado do bot:", error.response ? error.response.data : error.message);
-      
-      // Se a API responder um objeto de erro legível, mostramos uma parte dele para diagnóstico
-      if (error.response && error.response.data && error.response.data.error) {
-        return message.reply(`A IA enviou um alerta: ${error.response.data.error.slice(0, 50)}...`);
-      }
-      
-      await message.reply("Estou limpando minha lente da câmera... tente me marcar de novo! 📸");
+      console.error(error);
+      await message.reply("Cansei... Minha câmera quebrou e eu não quero mais falar com ninguém! 📸🌻");
     }
   }
 });
