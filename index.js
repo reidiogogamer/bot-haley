@@ -41,13 +41,12 @@ client.on('messageCreate', async (message) => {
 
       const data = await response.json();
       
-      // Correção do formato: Hugging Face envia uma lista [ { generated_text: "..." } ]
+      // CORREÇÃO AQUI: Lendo a posição [0] da resposta da lista do Hugging Face
       if (Array.isArray(data) && data[0] && data[0].generated_text) {
         let respostaCompleta = data[0].generated_text;
         let partes = respostaCompleta.split("<|assistant|>\n");
         let respostaLimpa = partes[partes.length - 1] || respostaCompleta;
         
-        // Se a resposta limpar e ainda vier com tags do sistema, removemos
         respostaLimpa = respostaLimpa.replace(/<\|[\s\S]*?\|>/g, '').trim();
         
         await message.reply(respostaLimpa || "O que foi? Não me faça perder tempo.");
