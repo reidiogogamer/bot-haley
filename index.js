@@ -11,7 +11,6 @@ const client = new Client({
 
 const PERSONALIDADE_ABIGAIL = "Você é a Abigail de Stardew Valley. Você é amigável, alegre e adora mistérios, videogames, tocar flauta e explorar as minas. Às vezes você brinca sobre comer quartzo ou ametistas porque as pessoas dizem que você faz isso. Responda sempre em português de forma natural, curta, descontraída e como uma pessoa perfeitamente normal. Nunca seja crítica, militante ou ranzinza. Nunca saia do personagem.";
 
-// ALERTA DE DIAGNÓSTICO: Mostra no console do Render se as chaves existem
 client.once('ready', () => {
   console.log(`[BOT] Conectado com sucesso como: ${client.user.tag}`);
   console.log(`[CHECK] Token do Discord configurado: ${process.env.DISCORD_TOKEN ? "SIM" : "NÃO"}`);
@@ -32,9 +31,9 @@ client.on('messageCreate', async (message) => {
       await message.channel.sendTyping();
 
       const response = await axios.post(
-        "https://api.groq.com/openai/v1/chat/completions",
+        "https://groq.com",
         {
-          model: "llama-3.1-8b-instant", 
+          model: "llama-3.3-70b-versatile", // MODELO ATUALIZADO QUE EXISTE NA GROQ
           messages: [
             { role: "system", content: PERSONALIDADE_ABIGAIL },
             { role: "user", content: textoLimpo }
@@ -50,7 +49,6 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // SINTAXE BLINDADA: Evita qualquer quebra de leitura de objeto usando '?.'
       const respostaIA = response?.data?.choices?.[0]?.message?.content;
 
       if (respostaIA) {
@@ -60,7 +58,6 @@ client.on('messageCreate', async (message) => {
       }
 
     } catch (error) {
-      // PRINT CRUCIAL: Mostra o exato motivo da falha no terminal do Render
       console.error("====== DETALHES DO ERRO REAL ======");
       if (error.response) {
         console.error("Status do Erro:", error.response.status);
