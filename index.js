@@ -47,7 +47,7 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // AJUSTADO: Correção do índice [0] para ler corretamente os dados da Groq
+      // CORREÇÃO ESSENCIAL: Adicionado o [0] para ler corretamente a lista de escolhas da Groq
       if (response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
         const respostaIA = response.data.choices[0].message.content.trim();
         await message.reply(respostaIA);
