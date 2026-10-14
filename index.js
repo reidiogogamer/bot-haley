@@ -28,10 +28,11 @@ client.on('messageCreate', async (message) => {
     try {
       await message.channel.sendTyping();
 
+      // Chamada usando a URL correta e o modelo ativo Llama 3.1
       const response = await axios.post(
         "https://groq.com",
         {
-          model: "llama-3.1-8b-instant", // Modelo atualizado e ativo na Groq
+          model: "llama-3.1-8b-instant", 
           messages: [
             { role: "system", content: PERSONALIDADE_ABIGAIL },
             { role: "user", content: textoLimpo }
@@ -47,7 +48,7 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // SINTAXE CORRIGIDA: Lendo a posição [0] corretamente sem quebrar o bot
+      // Tratamento de resposta corrigido com o índice [0] obrigatório do Array
       if (response && response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
         const respostaIA = response.data.choices[0].message.content.trim();
         await message.reply(respostaIA);
@@ -55,6 +56,7 @@ client.on('messageCreate', async (message) => {
         await message.reply("Hum... acabei me distraindo com o meu videogame aqui. O que você tinha dito? 🎮");
       }
     } catch (error) {
+      // Monitoramento detalhado no terminal do Render
       console.error("Erro detalhado na Groq:", error.response ? error.response.data : error.message);
       await message.reply("Eita, deu uma chuvinha forte aqui e meu videogame travou! Me pergunta de novo? 🔮");
     }
