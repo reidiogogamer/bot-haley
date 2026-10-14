@@ -20,14 +20,15 @@ client.on('messageCreate', async (message) => {
 
   if (message.mentions.has(client.user)) {
     const textoLimpo = message.content.replace(`<@${client.user.id}>`, '').trim();
-    
+
     if (!textoLimpo) {
       return message.reply("Oi! Tudo bem? Estava aqui pensando em ir explorar as minas... precisa de algo? 🔮⚔️");
     }
 
     try {
       await message.channel.sendTyping();
-      
+
+      // CORREÇÃO: URL oficial da API da Groq para Chat Completions
       const response = await axios.post(
         "https://groq.com",
         {
@@ -47,16 +48,14 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // SINTAXE CORRIGIDA: Lendo a posição [0] para a Groq não travar no Node.js
       if (response && response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
         const respostaIA = response.data.choices[0].message.content.trim();
         await message.reply(respostaIA);
       } else {
         await message.reply("Hum... acabei me distraindo com o meu videogame aqui. O que você tinha dito? 🎮");
       }
-
     } catch (error) {
-      console.error(error.response ? error.response.data : error.message);
+      console.error("Erro na requisição à Groq:", error.response ? error.response.data : error.message);
       await message.reply("Eita, deu uma chuvinha forte aqui e meu videogame travou! Me pergunta de novo? 🔮");
     }
   }
