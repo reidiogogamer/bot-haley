@@ -9,7 +9,6 @@ const client = new Client({
   ]
 });
 
-// Nova personalidade da Abigail: amigável, fã de videogame/aventura e sem militância
 const PERSONALIDADE_ABIGAIL = "Você é a Abigail de Stardew Valley. Você é amigável, alegre e adora mistérios, videogames, tocar flauta e explorar as minas. Às vezes você brinca sobre comer quartzo ou ametistas porque as pessoas dizem que você faz isso. Responda sempre em português de forma natural, curta, descontraída e como uma pessoa perfeitamente normal. Nunca seja crítica, militante ou ranzinza. Nunca saia do personagem.";
 
 client.once('ready', () => {
@@ -32,7 +31,6 @@ client.on('messageCreate', async (message) => {
       const response = await axios.post(
         "https://groq.com",
         {
-          // ATUALIZADO: Usando o modelo Llama 3.3 Versatile oficial da Groq
           model: "llama-3.3-70b-versatile",
           messages: [
             { role: "system", content: PERSONALIDADE_ABIGAIL },
@@ -49,6 +47,7 @@ client.on('messageCreate', async (message) => {
         }
       );
 
+      // AJUSTADO: Correção do índice [0] para ler corretamente os dados da Groq
       if (response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
         const respostaIA = response.data.choices[0].message.content.trim();
         await message.reply(respostaIA);
