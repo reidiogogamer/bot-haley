@@ -13,8 +13,6 @@ const PERSONALIDADE_ABIGAIL = "Você é a Abigail de Stardew Valley. Você é am
 
 client.once('ready', () => {
   console.log(`[BOT] Conectado com sucesso como: ${client.user.tag}`);
-  console.log(`[CHECK] Token do Discord configurado: ${process.env.DISCORD_TOKEN ? "SIM" : "NÃO"}`);
-  console.log(`[CHECK] API Key da Groq configurada: ${process.env.GROQ_API_KEY ? "SIM" : "NÃO"}`);
 });
 
 client.on('messageCreate', async (message) => {
@@ -33,7 +31,7 @@ client.on('messageCreate', async (message) => {
       const response = await axios.post(
         "https://groq.com",
         {
-          model: "llama-3.3-70b-versatile", // MODELO ATUALIZADO QUE EXISTE NA GROQ
+          model: "llama-3.3-70b-versatile", 
           messages: [
             { role: "system", content: PERSONALIDADE_ABIGAIL },
             { role: "user", content: textoLimpo }
