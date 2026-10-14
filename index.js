@@ -32,7 +32,8 @@ client.on('messageCreate', async (message) => {
       const response = await axios.post(
         "https://groq.com",
         {
-          model: "llama-3.1-8b-instant",
+          // ATUALIZADO: Usando o modelo Llama 3.3 Versatile oficial da Groq
+          model: "llama-3.3-70b-versatile",
           messages: [
             { role: "system", content: PERSONALIDADE_ABIGAIL },
             { role: "user", content: textoLimpo }
@@ -63,7 +64,6 @@ client.on('messageCreate', async (message) => {
 });
 
 const http = require('http');
-// Nome atualizado para o monitoramento do Render
 http.createServer((req, res) => res.end("Abigail Viva")).listen(process.env.PORT || 3000);
 
 client.login(process.env.DISCORD_TOKEN);
