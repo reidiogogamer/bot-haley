@@ -31,7 +31,7 @@ client.on('messageCreate', async (message) => {
       const response = await axios.post(
         "https://groq.com",
         {
-          model: "llama-3.3-70b-versatile",
+          model: "gemma2-9b-it",
           messages: [
             { role: "system", content: PERSONALIDADE_ABIGAIL },
             { role: "user", content: textoLimpo }
