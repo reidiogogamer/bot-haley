@@ -31,7 +31,7 @@ client.on('messageCreate', async (message) => {
       const response = await axios.post(
         "https://groq.com",
         {
-          model: "gemma2-9b-it",
+          model: "llama-3.1-8b-instant", // Modelo atualizado e ativo na Groq
           messages: [
             { role: "system", content: PERSONALIDADE_ABIGAIL },
             { role: "user", content: textoLimpo }
@@ -47,7 +47,7 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // CORREÇÃO VISÍVEL: Adicionado o [0] que faltava em choices[0]
+      // SINTAXE CORRIGIDA: Lendo a posição [0] corretamente sem quebrar o bot
       if (response && response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
         const respostaIA = response.data.choices[0].message.content.trim();
         await message.reply(respostaIA);
@@ -55,8 +55,7 @@ client.on('messageCreate', async (message) => {
         await message.reply("Hum... acabei me distraindo com o meu videogame aqui. O que você tinha dito? 🎮");
       }
     } catch (error) {
-      // Exibe o erro exato nos logs do Render para monitoramento
-      console.error("Erro detalhado:", error.response ? error.response.data : error.message);
+      console.error("Erro detalhado na Groq:", error.response ? error.response.data : error.message);
       await message.reply("Eita, deu uma chuvinha forte aqui e meu videogame travou! Me pergunta de novo? 🔮");
     }
   }
