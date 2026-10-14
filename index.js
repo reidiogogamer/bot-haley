@@ -28,7 +28,6 @@ client.on('messageCreate', async (message) => {
     try {
       await message.channel.sendTyping();
 
-      // Chamada usando a URL correta e o modelo ativo Llama 3.1
       const response = await axios.post(
         "https://groq.com",
         {
@@ -48,7 +47,7 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // Tratamento de resposta corrigido com o índice [0] obrigatório do Array
+      // SINTAXE TOTALMENTE CORRIGIDA: Lendo a primeira posição [0] corretamente
       if (response && response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
         const respostaIA = response.data.choices[0].message.content.trim();
         await message.reply(respostaIA);
@@ -56,7 +55,6 @@ client.on('messageCreate', async (message) => {
         await message.reply("Hum... acabei me distraindo com o meu videogame aqui. O que você tinha dito? 🎮");
       }
     } catch (error) {
-      // Monitoramento detalhado no terminal do Render
       console.error("Erro detalhado na Groq:", error.response ? error.response.data : error.message);
       await message.reply("Eita, deu uma chuvinha forte aqui e meu videogame travou! Me pergunta de novo? 🔮");
     }
