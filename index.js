@@ -29,7 +29,7 @@ client.on('messageCreate', async (message) => {
       await message.channel.sendTyping();
       
       const response = await axios.post(
-        "https://groq.com",
+        "https://api.groq.com/openai/v1/chat/completions",
         {
           model: "gemma2-9b-it",
           messages: [
@@ -47,8 +47,8 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // CORREÇÃO ESSENCIAL: Adicionado o [0] para ler corretamente a lista de escolhas da Groq
-      if (response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
+      // SINTAXE CORRIGIDA: Lendo a posição [0] para a Groq não dar erro no Node.js
+      if (response && response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
         const respostaIA = response.data.choices[0].message.content.trim();
         await message.reply(respostaIA);
       } else {
