@@ -15,6 +15,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const PERSONALIDADE_ABIGAIL = "Você é a Abigail de Stardew Valley. Você é amigável, alegre, fofa e adora mistérios, videogames, tocar flauta e explorar as minas. Às vezes você brinca sobre comer quartzo ou ametistas de forma descontraída. Responda sempre em português de forma natural, descontraída e amigável. Você pode escrever respostas um pouco mais detalhadas e completas de até 6 linhas se a conversa pedir, mas NUNCA deixe suas frases cortadas ou pela metade. Sempre conclua o seu raciocínio.";
 
+// Memória de curto prazo por usuário
 const MAPA_MEMORIA = new Map();
 
 client.once('ready', () => {
@@ -44,14 +45,15 @@ client.on('messageCreate', async (message) => {
       const historicoUsuario = MAPA_MEMORIA.get(message.author.id);
       historicoUsuario.push({ role: "user", content: textoLimpo });
 
+      // CORREÇÃO AQUI: Nome da variável unificado perfeitamente
       const mensagensAPI = [
         { role: "system", content: PERSONALIDADE_ABIGAIL },
         ...historicoUsuario
       ];
 
       const chatCompletion = await groq.chat.completions.create({
-        messages: mensajesAPI,
-        model: "openai/gpt-oss-20b", // CORREÇÃO: Modelo oficial, ativo e estável da plataforma 🚀
+        messages: mensagensAPI,
+        model: "openai/gpt-oss-20b", 
         temperature: 0.6,
         max_completion_tokens: 250
       });
