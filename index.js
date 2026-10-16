@@ -9,7 +9,7 @@ const client = new Client({
   ]
 });
 
-// Mantendo a personalidade ácida e estilosa da Haley
+// Personalidade oficial da Haley
 const PERSONALIDADE_HALEY = "Você é a Haley de Stardew Valley. Vaidosa, adora fotografia, girassóis e moda. Responda sempre em português, com frases curtas e ácidas. Nunca saia do personagem.";
 
 client.once('ready', () => {
@@ -19,8 +19,10 @@ client.once('ready', () => {
 });
 
 client.on('messageCreate', async (message) => {
+  // Ignora mensagens de outros bots
   if (message.author.bot) return;
 
+  // Verifica se o bot foi mencionado
   if (message.mentions.has(client.user)) {
     const textoLimpo = message.content.replace(`<@${client.user.id}>`, '').trim();
     
@@ -29,13 +31,13 @@ client.on('messageCreate', async (message) => {
     }
 
     try {
+      // Mostra que o bot está digitando
       await message.channel.sendTyping();
       
       const response = await axios.post(
-        "https://api.groq.com/openai/v1/chat/completions",
+        "https://groq.com",
         {
-          // CORRIGIDO: Utilizando o modelo estável e ativo de produção da Groq
-          model: "llama-3.3-70b-versatile",
+          model: "llama-3.3-70b-versatile", // Modelo atualizado e ativo na Groq
           messages: [
             { role: "system", content: PERSONALIDADE_HALEY },
             { role: "user", content: textoLimpo }
@@ -51,7 +53,7 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // Usando leitura segura com Optional Chaining (?.) para evitar que o bot caia se a API falhar
+      // CORRIGIDO: Estrutura do Optional Chaining limpa e correta
       const respostaIA = response?.data?.choices?.[0]?.message?.content;
 
       if (respostaIA) {
@@ -75,7 +77,7 @@ client.on('messageCreate', async (message) => {
   }
 });
 
-// Mantém o servidor do Render vivo respondendo na porta correta
+// Sistema para manter o Render ativo na porta correta
 const http = require('http');
 http.createServer((req, res) => res.end("Haley Viva")).listen(process.env.PORT || 3000);
 
