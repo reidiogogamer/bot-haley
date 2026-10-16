@@ -54,7 +54,7 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // CORREÇÃO CRÍTICA DE LEITURA: Adicionado o índice [0] obrigatório do array do Axios
+      // CORREÇÃO CRÍTICA DE SINTAXE: Adicionado o índice [0] obrigatório para ler o array do Axios corretamente
       if (response && response.data && response.data.choices && response.data.choices.length > 0) {
         const respostaIA = response.data.choices[0].message.content;
         await message.reply(respostaIA.trim());
