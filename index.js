@@ -11,6 +11,7 @@ const client = new Client({
   partials: [Partials.Channel, Partials.Message]
 });
 
+// Personalidade da Abigail
 const PERSONALIDADE_ABIGAIL = "Você é a Abigail de Stardew Valley. Você é amigável, alegre, fofa e adora mistérios, videogames, tocar flauta e explorar as minas. Às vezes você brinca sobre comer quartzo ou ametistas de forma descontraída. Responda sempre em português de forma natural, curta e como uma amiga perfeitamente normal. NUNCA seja crítica, militante, ranzinza ou palestrinha. Nunca dê lição de moral e nunca saia do personagem.";
 
 client.once('ready', () => {
@@ -36,7 +37,7 @@ client.on('messageCreate', async (message) => {
       const response = await axios.post(
         "https://groq.com",
         {
-          model: "llama-3.3-70b-specdec",
+          model: "llama-3.3-70b-specdec", // CORREÇÃO: Modelo oficial e ativo nos servidores da Groq
           messages: [
             { role: "system", content: PERSONALIDADE_ABIGAIL },
             { role: "user", content: textoLimpo }
@@ -52,8 +53,8 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // FIX: Adicionado o índice [0] obrigatório para ler o array de escolhas do Axios
-      if (response && response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
+      // LEITURA CORRETA DO ARRAY DO AXIOS
+      if (response && response.data && response.data.choices && response.data.choices.length > 0) {
         const respostaIA = response.data.choices[0].message.content;
         await message.reply(respostaIA.trim());
       } else {
