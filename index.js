@@ -39,11 +39,11 @@ async function processarMensagemIA(message, client, mapaMemoria, personalidade, 
       historicoUsuario.push({ role: "user", content: textoLimpo });
 
       const mensagensAPI = [
-        { role: "system", content: personalidad },
+        { role: "system", content: personalidade }, // CORRIGIDO: Agora está escrito 'personalidade' corretamente!
         ...historicoUsuario
       ];
 
-      // RESERVA SEURA E ATIVA: Se o Render falhar, ele usa o modelo estável da plataforma
+      // Usará a variável GROQ_MODEL do Render, se não tiver, assume o gpt-oss-120b
       const modeloAtivo = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
 
       const chatCompletion = await groq.chat.completions.create({
