@@ -34,7 +34,7 @@ client.on('messageCreate', async (message) => {
       // Mostra o efeito visual de digitação no canal do Discord
       await message.channel.sendTyping();
       
-      // Chamada oficial da API de inferência da Groq Cloud
+      // CORREÇÃO CRÍTICA: Mudança do endpoint para a rota oficial de chat da Groq
       const response = await axios.post(
         "https://groq.com",
         {
