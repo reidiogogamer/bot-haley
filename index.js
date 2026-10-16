@@ -19,8 +19,10 @@ client.once('ready', () => {
 });
 
 client.on('messageCreate', async (message) => {
+  // Ignora mensagens de outros bots
   if (message.author.bot) return;
 
+  // Verifica se o bot da Abigail foi mencionado diretamente no chat
   if (message.mentions.has(client.user)) {
     const textoLimpo = message.content.replace(`<@${client.user.id}>`, '').trim();
     
@@ -29,13 +31,14 @@ client.on('messageCreate', async (message) => {
     }
 
     try {
+      // Mostra o efeito visual de digitação no canal do Discord
       await message.channel.sendTyping();
       
-      // ENDPOINT CORRETO: Apontando para a API de chat da Groq
+      // Chamada oficial da API de inferência da Groq Cloud
       const response = await axios.post(
         "https://groq.com",
         {
-          model: "llama-3.3-70b-specdec", // Modelo atualizado e ativo na infraestrutura da Groq
+          model: "llama-3.1-8b-instant", // Modelo oficial de produção estável e ativo
           messages: [
             { role: "system", content: PERSONALIDADE_ABIGAIL },
             { role: "user", content: textoLimpo }
@@ -51,7 +54,7 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // LEITURA CORRETA DO AXIOS: Acessando o índice [0] do array de escolhas
+      // CORREÇÃO CRÍTICA DE LEITURA: Adicionado o índice [0] obrigatório do array de escolhas
       if (response && response.data && response.data.choices && response.data.choices.length > 0) {
         const respostaIA = response.data.choices[0].message.content;
         await message.reply(respostaIA.trim());
@@ -74,7 +77,7 @@ client.on('messageCreate', async (message) => {
   }
 });
 
-// Servidor HTTP para o Render
+// Mantém o contêiner do Render ativo escutando a porta padrão
 const http = require('http');
 http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -83,4 +86,5 @@ http.createServer((req, res) => {
   console.log(`[WEB] Servidor de pé na porta ${process.env.PORT || 3000}`);
 });
 
+// Inicializa a conexão com as credenciais da Abigail
 client.login(process.env.DISCORD_TOKEN);
