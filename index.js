@@ -39,19 +39,19 @@ client.on('messageCreate', async (message) => {
     try {
       await message.channel.sendTyping();
       
-      // Chamada usando o método oficial do SDK
+      // Chamada usando o método oficial do SDK e o modelo correto ativo
       const chatCompletion = await groq.chat.completions.create({
         messages: [
           { role: "system", content: PERSONALIDADE_ABIGAIL },
           { role: "user", content: textoLimpo }
         ],
-        model: "llama-3.3-70b-versatile", // Modelo de produção estável ativo na Groq
-        temperature: 0.7,
-        max_tokens: 100
+        model: "openai/gpt-oss-20b", // MODELO ATIVO ATUALMENTE NA INFRAESTRUTURA DA GROQ
+        temperature: 0.6,
+        max_completion_tokens: 100
       });
 
-      // CORREÇÃO CRÍTICA: Adicionado o índice [0] obrigatório do array de escolhas da Groq
-      const respostaIA = chatCompletion.choices[0]?.message?.content;
+      // Captura estável usando o padrão de array do SDK oficial
+      const respostaIA = chatCompletion.choices?.[0]?.message?.content;
 
       if (respostaIA) {
         await message.reply(respostaIA.trim());
