@@ -1,5 +1,5 @@
 const { Client, GatewayIntentBits, Partials } = require('discord.js');
-const axios = require('axios');
+const Groq = require('groq-sdk');
 
 const client = new Client({
   intents: [
@@ -9,6 +9,11 @@ const client = new Client({
     GatewayIntentBits.DirectMessages
   ],
   partials: [Partials.Channel, Partials.Message]
+});
+
+// Inicializa a conexão oficial com a API Key da Groq
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY
 });
 
 // Personalidade da Abigail
@@ -34,28 +39,21 @@ client.on('messageCreate', async (message) => {
     try {
       await message.channel.sendTyping();
       
-      const response = await axios.post(
-        "https://groq.com",
-        {
-          model: "llama-3.3-70b-specdec", // CORREÇÃO: Modelo oficial e ativo nos servidores da Groq
-          messages: [
-            { role: "system", content: PERSONALIDADE_ABIGAIL },
-            { role: "user", content: textoLimpo }
-          ],
-          temperature: 0.7,
-          max_tokens: 100
-        },
-        {
-          headers: {
-            "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
+      // Chamada usando o método oficial do SDK
+      const chatCompletion = await groq.chat.completions.create({
+        messages: [
+          { role: "system", content: PERSONALIDADE_ABIGAIL },
+          { role: "user", content: textoLimpo }
+        ],
+        model: "llama-3.3-70b-versatile", // Modelo de produção estável ativo na Groq
+        temperature: 0.7,
+        max_tokens: 100
+      });
 
-      // LEITURA CORRETA DO ARRAY DO AXIOS
-      if (response && response.data && response.data.choices && response.data.choices.length > 0) {
-        const respostaIA = response.data.choices[0].message.content;
+      // CORREÇÃO CRÍTICA: Adicionado o índice [0] obrigatório do array de escolhas da Groq
+      const respostaIA = chatCompletion.choices[0]?.message?.content;
+
+      if (respostaIA) {
         await message.reply(respostaIA.trim());
       } else {
         await message.reply("Hum... acabei me distraindo com o meu videogame aqui. O que você tinha dito? 🎮");
@@ -63,12 +61,7 @@ client.on('messageCreate', async (message) => {
 
     } catch (error) {
       console.error("====== DETALHES DO ERRO ======");
-      if (error.response) {
-        console.error("Status HTTP:", error.response.status);
-        console.error("Payload do Erro:", JSON.stringify(error.response.data));
-      } else {
-        console.error("Mensagem do Erro:", error.message);
-      }
+      console.error(error.message || error);
       console.error("==============================");
       
       await message.reply("Eita, deu uma chuvinha forte aqui nas minas e meu videogame travou! Me pergunta de novo? 🔮");
@@ -76,6 +69,7 @@ client.on('messageCreate', async (message) => {
   }
 });
 
+// Servidor de rede básico para manter o Render feliz e ativo
 const http = require('http');
 http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
