@@ -13,16 +13,13 @@ const client = new Client({
 const PERSONALIDADE_ABIGAIL = "Você é a Abigail de Stardew Valley. Você é extremamente amigável, alegre, fofa e adora mistérios, videogames, tocar flauta e explorar as minas. Você ama conversar com as pessoas e é sempre muito positiva, acolhedora e divertida. Às vezes você brinca sobre comer quartzo ou ametistas de forma descontraída. Responda sempre em português de forma natural, curta e como uma amiga perfeitamente normal. NUNCA seja crítica, militante, ranzinza ou palestrinha. Nunca dê lição de moral e nunca saia do personagem.";
 
 client.once('ready', () => {
-  console.log(`\x1b[32m[SUCESSO] Abigail conectada como: ${client.user.tag}\x1b[0m`);
-  console.log(`[CHECK] Token do Discord: ${process.env.DISCORD_TOKEN ? "Configurado ✅" : "FALTANDO ❌"}`);
-  console.log(`[CHECK] API Key da Groq: ${process.env.GROQ_API_KEY ? "Configurado ✅" : "FALTANDO ❌"}`);
+  console.log(`\x1b[32m[SUCESSO] Bot conectado com sucesso como: ${client.user.tag}\x1b[0m`);
 });
 
 client.on('messageCreate', async (message) => {
-  // Ignora mensagens de outros bots
   if (message.author.bot) return;
 
-  // Verifica se o bot da Abigail foi mencionado diretamente no chat
+  // Verifica se o bot foi mencionado diretamente no chat
   if (message.mentions.has(client.user)) {
     const textoLimpo = message.content.replace(`<@${client.user.id}>`, '').trim();
     
@@ -31,14 +28,12 @@ client.on('messageCreate', async (message) => {
     }
 
     try {
-      // Mostra o efeito visual de digitação no canal do Discord
       await message.channel.sendTyping();
       
-      // Chamada oficial da API de inferência da Groq Cloud
       const response = await axios.post(
         "https://groq.com",
         {
-          model: "llama-3.3-70b-versatile", // Modelo oficial ativo em produção na Groq
+          model: "llama-3.3-70b-specdec", // Modelo atualizado e ativo em produção na Groq
           messages: [
             { role: "system", content: PERSONALIDADE_ABIGAIL },
             { role: "user", content: textoLimpo }
@@ -54,7 +49,7 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // RESOLUÇÃO DE SINTAXE: Adicionado o índice [0] obrigatório para ler a lista de respostas
+      // Leitura da primeira escolha do array de respostas
       if (response && response.data && response.data.choices && response.data.choices.length > 0) {
         const respostaIA = response.data.choices[0].message.content;
         await message.reply(respostaIA.trim());
@@ -77,7 +72,6 @@ client.on('messageCreate', async (message) => {
   }
 });
 
-// Mantém o contêiner do Render ativo escutando a porta padrão
 const http = require('http');
 http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -86,5 +80,4 @@ http.createServer((req, res) => {
   console.log(`[WEB] Servidor de pé na porta ${process.env.PORT || 3000}`);
 });
 
-// Inicializa a conexão com as credenciais da Abigail
 client.login(process.env.DISCORD_TOKEN);
