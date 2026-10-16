@@ -13,9 +13,10 @@ const client = new Client({
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-const PERSONALIDADE_HALEY = "Você é a Haley do jogo Stardew Valley. Você é extremamente amigável, alegre, estilosa, fofa e adora fotografia, moda, maquiagem e passar o tempo na praia procurando conchas. Você ama conversar com as pessoas e é sempre muito positiva, vaidosa e divertida. Às vezes você comenta sobre tirar fotos com sua câmera ou brinca sobre odiar rabanetes. Responda sempre em português de forma natural, curta e como uma amiga perfeitamente normal e estilosa. NUNCA seja crítica, ranzinza, palestrinha ou dê lição de moral. Nunca saia do personagem.";
+// PERSONALIDADE AJUSTADA: Agora ela sabe que pode escrever até 6 linhas e deve concluir o raciocínio
+const PERSONALIDADE_HALEY = "Você é a Haley do jogo Stardew Valley. Você é extremamente amigável, alegre, estilosa, fofa e adora fotografia, moda, maquiagem e passar o tempo na praia procurando conchas. Você ama conversar com as pessoas e é sempre muito positiva, vaidosa e divertida. Às vezes você comenta sobre tirar fotos com sua câmera ou brinca sobre odiar rabanetes. Responda sempre em português de forma natural, descontraída e estilosa. Você pode escrever respostas um pouco mais detalhadas e completas de até 6 linhas se a conversa pedir, mas NUNCA deixe suas frases cortadas ou pela metade. Sempre conclua o seu raciocínio.";
 
-// Memória de curto prazo: armazena o histórico por usuário
+// Memória de curto prazo por usuário
 const MAPA_MEMORIA = new Map();
 
 client.once('ready', () => {
@@ -38,36 +39,31 @@ client.on('messageCreate', async (message) => {
     try {
       await message.channel.sendTyping();
       
-      // Inicializa o histórico do usuário se não existir
       if (!MAPA_MEMORIA.has(message.author.id)) {
         MAPA_MEMORIA.set(message.author.id, []);
       }
       
       const historicoUsuario = MAPA_MEMORIA.get(message.author.id);
-      
-      // Adiciona a nova mensagem do usuário ao histórico
       historicoUsuario.push({ role: "user", content: textoLimpo });
 
-      // Monta a estrutura de mensagens contendo o histórico e a personalidade
       const mensagensAPI = [
         { role: "system", content: PERSONALIDADE_HALEY },
         ...historicoUsuario
       ];
 
       const chatCompletion = await groq.chat.completions.create({
-        messages: mensagensAPI,
+        messages: mensajesAPI,
         model: "openai/gpt-oss-20b", 
         temperature: 0.6,
-        max_completion_tokens: 100
+        max_completion_tokens: 250 // ESPAÇO IDEAL PARA ATÉ 6 LINHAS COMPLETAS SEM CORTAR 🚀
       });
 
       const respostaIA = chatCompletion.choices?.[0]?.message?.content;
 
       if (respostaIA) {
-        // Salva a resposta da Haley na memória dela para o próximo turno
         historicoUsuario.push({ role: "assistant", content: respostaIA.trim() });
         
-        // Mantém apenas as últimas 10 mensagens (5 perguntas e 5 respostas) para não estourar os tokens
+        // Mantém as últimas 10 mensagens na memória
         if (historicoUsuario.length > 10) {
           historicoUsuario.shift();
           historicoUsuario.shift();
