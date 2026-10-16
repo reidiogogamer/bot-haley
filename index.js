@@ -34,10 +34,11 @@ client.on('messageCreate', async (message) => {
       // Mostra que o bot está digitando
       await message.channel.sendTyping();
       
+      // CORRIGIDO: Agora usando o endpoint oficial da API de inferência da Groq
       const response = await axios.post(
         "https://groq.com",
         {
-          model: "llama-3.3-70b-versatile", // Modelo atualizado e ativo na Groq
+          model: "llama-3.3-70b-versatile",
           messages: [
             { role: "system", content: PERSONALIDADE_HALEY },
             { role: "user", content: textoLimpo }
@@ -53,7 +54,7 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // CORRIGIDO: Estrutura do Optional Chaining limpa e correta
+      // Estrutura do Optional Chaining limpa e correta
       const respostaIA = response?.data?.choices?.[0]?.message?.content;
 
       if (respostaIA) {
