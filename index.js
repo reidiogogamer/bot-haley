@@ -11,16 +11,14 @@ const client = new Client({
   partials: [Partials.Channel, Partials.Message]
 });
 
-// Inicializa a conexão oficial com a API Key da Groq
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
-});
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// Personalidade da Abigail
-const PERSONALIDADE_ABIGAIL = "Você é a Abigail de Stardew Valley. Você é amigável, alegre, fofa e adora mistérios, videogames, tocar flauta e explorar as minas. Às vezes você brinca sobre comer quartzo ou ametistas de forma descontraída. Responda sempre em português de forma natural, curta e como uma amiga perfeitamente normal. NUNCA seja crítica, militante, ranzinza ou palestrinha. Nunca dê lição de moral e nunca saia do personagem.";
+const PERSONALIDADE_ABIGAIL = "Você é a Abigail de Stardew Valley. Você é amigável, alegre, fofa e adora mistérios, videogames, tocar flauta e explorar as minas. Às vezes você brinca sobre comer quartzo ou ametistas de forma descontraída. Responda sempre em português de forma natural, descontraída e amigável. Você pode escrever respostas um pouco mais detalhadas e completas de até 6 linhas se a conversa pedir, mas NUNCA deixe suas frases cortadas ou pela metade. Sempre conclua o seu raciocínio.";
+
+const MAPA_MEMORIA = new Map();
 
 client.once('ready', () => {
-  console.log(`\x1b[32m[OK] O Bot ligou com sucesso como: ${client.user.tag}\x1b[0m`);
+  console.log(`\x1b[32m[OK] O Bot da Abigail ligou com sucesso como: ${client.user.tag}\x1b[0m`);
 });
 
 client.on('messageCreate', async (message) => {
@@ -39,21 +37,35 @@ client.on('messageCreate', async (message) => {
     try {
       await message.channel.sendTyping();
       
-      // Chamada usando o método oficial do SDK e o modelo correto ativo
+      if (!MAPA_MEMORIA.has(message.author.id)) {
+        MAPA_MEMORIA.set(message.author.id, []);
+      }
+      
+      const historicoUsuario = MAPA_MEMORIA.get(message.author.id);
+      historicoUsuario.push({ role: "user", content: textoLimpo });
+
+      const mensagensAPI = [
+        { role: "system", content: PERSONALIDADE_ABIGAIL },
+        ...historicoUsuario
+      ];
+
       const chatCompletion = await groq.chat.completions.create({
-        messages: [
-          { role: "system", content: PERSONALIDADE_ABIGAIL },
-          { role: "user", content: textoLimpo }
-        ],
-        model: "openai/gpt-oss-20b", // MODELO ATIVO ATUALMENTE NA INFRAESTRUTURA DA GROQ
+        messages: mensajesAPI,
+        model: "openai/gpt-oss-20b", // CORREÇÃO: Modelo oficial, ativo e estável da plataforma 🚀
         temperature: 0.6,
-        max_completion_tokens: 100
+        max_completion_tokens: 250
       });
 
-      // Captura estável usando o padrão de array do SDK oficial
       const respostaIA = chatCompletion.choices?.[0]?.message?.content;
 
       if (respostaIA) {
+        historicoUsuario.push({ role: "assistant", content: respostaIA.trim() });
+        
+        if (historicoUsuario.length > 10) {
+          historicoUsuario.shift();
+          historicoUsuario.shift();
+        }
+
         await message.reply(respostaIA.trim());
       } else {
         await message.reply("Hum... acabei me distraindo com o meu videogame aqui. O que você tinha dito? 🎮");
@@ -63,17 +75,15 @@ client.on('messageCreate', async (message) => {
       console.error("====== DETALHES DO ERRO ======");
       console.error(error.message || error);
       console.error("==============================");
-      
       await message.reply("Eita, deu uma chuvinha forte aqui nas minas e meu videogame travou! Me pergunta de novo? 🔮");
     }
   }
 });
 
-// Servidor de rede básico para manter o Render feliz e ativo
 const http = require('http');
 http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end("Bot Online");
+  res.end("Abigail Viva");
 }).listen(process.env.PORT || 3000);
 
 client.login(process.env.DISCORD_TOKEN);
