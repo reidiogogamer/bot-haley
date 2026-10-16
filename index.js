@@ -9,10 +9,13 @@ const client = new Client({
   ]
 });
 
+// Mantendo a personalidade ácida e estilosa da Haley
 const PERSONALIDADE_HALEY = "Você é a Haley de Stardew Valley. Vaidosa, adora fotografia, girassóis e moda. Responda sempre em português, com frases curtas e ácidas. Nunca saia do personagem.";
 
 client.once('ready', () => {
-  console.log(`Bot conectado como: ${client.user.tag}`);
+  console.log(`[BOT] Haley conectada com sucesso como: ${client.user.tag}`);
+  console.log(`[CHECK] Token do Discord: ${process.env.DISCORD_TOKEN ? "OK" : "FALTANDO"}`);
+  console.log(`[CHECK] API Key da Groq: ${process.env.GROQ_API_KEY ? "OK" : "FALTANDO"}`);
 });
 
 client.on('messageCreate', async (message) => {
@@ -31,8 +34,8 @@ client.on('messageCreate', async (message) => {
       const response = await axios.post(
         "https://api.groq.com/openai/v1/chat/completions",
         {
-          // ATUALIZADO: Usando o modelo oficial e ativo no sistema da Groq
-          model: "llama-3.1-8b-instant",
+          // CORRIGIDO: Utilizando o modelo estável e ativo de produção da Groq
+          model: "llama-3.3-70b-versatile",
           messages: [
             { role: "system", content: PERSONALIDADE_HALEY },
             { role: "user", content: textoLimpo }
@@ -48,20 +51,31 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      if (response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
-        const respostaIA = response.data.choices[0].message.content.trim();
-        await message.reply(respostaIA);
+      // Usando leitura segura com Optional Chaining (?.) para evitar que o bot caia se a API falhar
+      const respostaIA = response?.data?.choices?.[0]?.message?.content;
+
+      if (respostaIA) {
+        await message.reply(respostaIA.trim());
       } else {
         await message.reply("Eca... cansei de falar por agora. Volte mais tarde! 📸");
       }
 
     } catch (error) {
-      console.error(error.response ? error.response.data : error.message);
+      console.error("====== DETALHES DO ERRO DA HALEY ======");
+      if (error.response) {
+        console.error("Status:", error.response.status);
+        console.error("Dados:", JSON.stringify(error.response.data));
+      } else {
+        console.error("Mensagem:", error.message);
+      }
+      console.error("=======================================");
+      
       await message.reply("Eca... meu rolo de filme travou de verdade agora. Me pergunte de novo! 📸🌻");
     }
   }
 });
 
+// Mantém o servidor do Render vivo respondendo na porta correta
 const http = require('http');
 http.createServer((req, res) => res.end("Haley Viva")).listen(process.env.PORT || 3000);
 
