@@ -13,7 +13,6 @@ const client = new Client({
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// PERSONALIDADE AJUSTADA: Agora ela sabe que pode escrever até 6 linhas e deve concluir o raciocínio
 const PERSONALIDADE_HALEY = "Você é a Haley do jogo Stardew Valley. Você é extremamente amigável, alegre, estilosa, fofa e adora fotografia, moda, maquiagem e passar o tempo na praia procurando conchas. Você ama conversar com as pessoas e é sempre muito positiva, vaidosa e divertida. Às vezes você comenta sobre tirar fotos com sua câmera ou brinca sobre odiar rabanetes. Responda sempre em português de forma natural, descontraída e estilosa. Você pode escrever respostas um pouco mais detalhadas e completas de até 6 linhas se a conversa pedir, mas NUNCA deixe suas frases cortadas ou pela metade. Sempre conclua o seu raciocínio.";
 
 // Memória de curto prazo por usuário
@@ -52,10 +51,10 @@ client.on('messageCreate', async (message) => {
       ];
 
       const chatCompletion = await groq.chat.completions.create({
-        messages: mensajesAPI,
-        model: "openai/gpt-oss-20b", 
-        temperature: 0.6,
-        max_completion_tokens: 250 // ESPAÇO IDEAL PARA ATÉ 6 LINHAS COMPLETAS SEM CORTAR 🚀
+        messages: mensagensAPI,
+        model: "llama-3.3-70b-specdec", // ATUALIZADO: Modelo oficial de alta performance e estabilidade 🚀
+        temperature: 0.7,
+        max_completion_tokens: 300 // Garante as 6 linhas completas sem cortar
       });
 
       const respostaIA = chatCompletion.choices?.[0]?.message?.content;
