@@ -31,9 +31,10 @@ client.on('messageCreate', async (message) => {
     }
 
     try {
-      // Mostra que o bot está digitando
+      // Mostra que o bot está digitando no Discord
       await message.channel.sendTyping();
       
+      // Endpoint oficial de chat da Groq Cloud
       const response = await axios.post(
         "https://groq.com",
         {
@@ -53,10 +54,9 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // CORRIGIDO: Removido o ponto duplicado na leitura do objeto choices
-      const respostaIA = response?.data?.choices?.[0]?.message?.content;
-
-      if (respostaIA) {
+      // Sintaxe clássica e segura para evitar incompatibilidade de versão do Node
+      if (response && response.data && response.data.choices && response.data.choices[0]) {
+        const respostaIA = response.data.choices[0].message.content;
         await message.reply(respostaIA.trim());
       } else {
         await message.reply("Eca... cansei de falar por agora. Volte mais tarde! 📸");
@@ -65,10 +65,10 @@ client.on('messageCreate', async (message) => {
     } catch (error) {
       console.error("====== DETALHES DO ERRO DA HALEY ======");
       if (error.response) {
-        console.error("Status:", error.response.status);
-        console.error("Dados:", JSON.stringify(error.response.data));
+        console.error("Status HTTP:", error.response.status);
+        console.error("Dados do Erro:", JSON.stringify(error.response.data));
       } else {
-        console.error("Mensagem:", error.message);
+        console.error("Mensagem de Erro:", error.message);
       }
       console.error("=======================================");
       
@@ -77,8 +77,9 @@ client.on('messageCreate', async (message) => {
   }
 });
 
-// Sistema para manter o Render ativo na porta correta
+// Garante que o Render não dê Timeout (Porta obrigatória)
 const http = require('http');
 http.createServer((req, res) => res.end("Haley Viva")).listen(process.env.PORT || 3000);
 
 client.login(process.env.DISCORD_TOKEN);
+ 
