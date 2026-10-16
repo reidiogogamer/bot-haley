@@ -34,7 +34,6 @@ client.on('messageCreate', async (message) => {
       // Mostra que o bot está digitando
       await message.channel.sendTyping();
       
-      // CORRIGIDO: Agora usando o endpoint oficial da API de inferência da Groq
       const response = await axios.post(
         "https://groq.com",
         {
@@ -54,7 +53,7 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // Estrutura do Optional Chaining limpa e correta
+      // CORRIGIDO: Removido o ponto duplicado na leitura do objeto choices
       const respostaIA = response?.data?.choices?.[0]?.message?.content;
 
       if (respostaIA) {
