@@ -1,74 +1,90 @@
-require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
-const Groq = require('groq-sdk');
+const axios = require('axios');
 
-// Inicializa o cliente do Discord com as permissões necessárias
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.MessageContent // Certifique-se de que esta chave continua ativa no Discord Dev Portal
   ]
 });
 
-// Inicializa o SDK oficial da Groq
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-// Prompt do sistema que define quem a IA finge ser
-const PERSONALIDADE_ABIGAIL = `Você é a Abigail do jogo Stardew Valley. 
-Sua personalidade é amigável, alegre, gamer e você adora mistérios, tocar flauta e explorar as minas. 
-De vez em quando, você faz piadas bobas sobre comer quartzo ou ametistas, já que os jogadores brincam com isso. 
-Responda SEMPRE em português de forma curta, descontraída e natural, como se estivesse conversando no chat do Discord. 
-Nunca saia do personagem e nunca seja rude.`;
+// Personalidade da Abigail: Totalmente amigável, gamer, sem militância ou chatice
+const PERSONALIDADE_ABIGAIL = "Você é a Abigail de Stardew Valley. Você é extremamente amigável, alegre, fofa e adora mistérios, videogames, tocar flauta e explorar as minas. Você ama conversar com as pessoas e é sempre muito positiva, acolhedora e divertida. Às vezes você brinca sobre comer quartzo ou ametistas de forma descontraída. Responda sempre em português de forma natural, curta e como uma amiga perfeitamente normal. NUNCA seja crítica, militante, ranzinza ou palestrinha. Nunca dê lição de moral e nunca saia do personagem.";
 
 client.once('ready', () => {
-  console.log(`🔮 Abigail online como: ${client.user.tag}`);
+  console.log(`\x1b[32m[SUCESSO] Abigail conectada como: ${client.user.tag}\x1b[0m`);
+  console.log(`[CHECK] Token do Discord: ${process.env.DISCORD_TOKEN ? "Configurado ✅" : "FALTANDO ❌"}`);
+  console.log(`[CHECK] API Key da Groq: ${process.env.GROQ_API_KEY ? "Configurado ✅" : "FALTANDO ❌"}`);
 });
 
 client.on('messageCreate', async (message) => {
-  // Ignora mensagens de outros bots para evitar loops
+  // Ignora mensagens de outros bots
   if (message.author.bot) return;
 
-  // O bot só responde se for mencionado diretamente
+  // Verifica se o bot da Abigail foi mencionado diretamente
   if (message.mentions.has(client.user)) {
-    // Remove a menção do texto para enviar apenas a pergunta real para a IA
-    const textoUsuario = message.content.replace(`<@${client.user.id}>`, '').trim();
-
-    // Se o usuário só mencionou o bot sem digitar nada
-    if (!textoUsuario) {
-      return message.reply("Oi! Tudo bem? Estava aqui limpando minha espada para ir nas minas... precisa de algo? 🔮⚔️");
+    const textoLimpo = message.content.replace(`<@${client.user.id}>`, '').trim();
+    
+    if (!textoLimpo) {
+      return message.reply("Oi! Tudo bem? Estava aqui pensando em ir explorar as minas... precisa de uma companhia para jogar videogame ou conversar? 🔮⚔️");
     }
 
     try {
-      // Mostra o status "Digitando..." no Discord para parecer natural
+      // Mostra o efeito visual de digitação no canal do Discord
       await message.channel.sendTyping();
+      
+      // Chamada oficial da API de inferência da Groq Cloud
+      const response = await axios.post(
+        "https://groq.com",
+        {
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: PERSONALIDADE_ABIGAIL },
+            { role: "user", content: textoLimpo }
+          ],
+          temperature: 0.8, // Um pouquinho mais alto para ela ser mais criativa e espontânea
+          max_tokens: 100
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
 
-      // Chamada oficial usando o SDK da Groq e o modelo estável recomendado atualmente
-      const chatCompletion = await groq.chat.completions.create({
-        messages: [
-          { role: "system", content: PERSONALIDADE_ABIGAIL },
-          { role: "user", content: textoUsuario }
-        ],
-        model: "llama-3.3-70b-versatile",
-        temperature: 0.7,
-        max_tokens: 150
-      });
-
-      // Captura a resposta de forma segura através do SDK oficial
-      const respostaAbigail = chatCompletion.choices[0]?.message?.content;
-
-      if (respostaAbigail) {
-        await message.reply(respostaAbigail.trim());
+      // Validação tradicional de resposta para compatibilidade universal do Node.js
+      if (response && response.data && response.data.choices && response.data.choices.length > 0) {
+        const respostaIA = response.data.choices[0].message.content;
+        await message.reply(respostaIA.trim());
       } else {
-        await message.reply("Hum... acabei me distraindo com o meu videogame aqui. O que você tinha dito? 🎮");
+        await message.reply("Hum... acabei me distraindo com o meu videogame aqui. O que você tinha dito, amigo? 🎮");
       }
 
     } catch (error) {
-      console.error("❌ Erro ao processar a resposta da Groq:", error);
-      await message.reply("Eita, deu uma chuvinha forte aqui nas minas e meu videogame travou! Pode repetir? 🔮");
+      console.error("====== EXPEDIÇÃO DE ERRO DA ABIGAIL ======");
+      if (error.response) {
+        console.error("Código HTTP recebido da Groq:", error.response.status);
+        console.error("Payload bruto do erro:", JSON.stringify(error.response.data));
+      } else {
+        console.error("Mensagem nativa obtida:", error.message);
+      }
+      console.error("==========================================");
+      
+      await message.reply("Eita, deu uma chuvinha forte aqui nas minas e meu videogame travou! Me pergunta de novo? 🔮");
     }
   }
 });
 
-// Autentica o bot no Discord usando o Token das variáveis de ambiente
+// Mantém o contêiner do Render ativo escutando a porta padrão
+const http = require('http');
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end("Abigail Ativa e Operando");
+}).listen(process.env.PORT || 3000, () => {
+  console.log(`[WEB] Servidor de pé na porta ${process.env.PORT || 3000}`);
+});
+
+// Inicializa a conexão com as credenciais da Abigail
 client.login(process.env.DISCORD_TOKEN);
