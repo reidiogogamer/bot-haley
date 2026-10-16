@@ -43,10 +43,12 @@ async function processarMensagemIA(message, client, mapaMemoria, personalidade, 
         ...historicoUsuario
       ];
 
-      // CHAMADA DA API DA GROQ COM O MODELO ATUALIZADO E ATIVO 🚀
+      // Proteção: usa o modelo vindo do Render ou assume o novo padrão estável caso esteja em branco
+      const modeloAtivo = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
+
       const chatCompletion = await groq.chat.completions.create({
         messages: mensagensAPI,
-        model: "llama-3.3-70b-specdec", 
+        model: modeloAtivo, 
         temperature: 0.6,
         max_completion_tokens: 250
       });
