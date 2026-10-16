@@ -38,7 +38,7 @@ client.on('messageCreate', async (message) => {
       const response = await axios.post(
         "https://groq.com",
         {
-          model: "openai/gpt-oss-20b", // CORREÇÃO: Modelo ativo e atualizado na infraestrutura da Groq
+          model: "llama-3.3-70b-versatile", // Modelo oficial ativo em produção na Groq
           messages: [
             { role: "system", content: PERSONALIDADE_ABIGAIL },
             { role: "user", content: textoLimpo }
@@ -54,7 +54,7 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // CORREÇÃO CRÍTICA DE SINTAXE: Adicionado o índice [0] obrigatório para ler o array do Axios corretamente
+      // RESOLUÇÃO DE SINTAXE: Adicionado o índice [0] obrigatório para ler a lista de respostas
       if (response && response.data && response.data.choices && response.data.choices.length > 0) {
         const respostaIA = response.data.choices[0].message.content;
         await message.reply(respostaIA.trim());
