@@ -39,12 +39,12 @@ async function processarMensagemIA(message, client, mapaMemoria, personalidade, 
       historicoUsuario.push({ role: "user", content: textoLimpo });
 
       const mensagensAPI = [
-        { role: "system", content: personalidade },
+        { role: "system", content: personalidad },
         ...historicoUsuario
       ];
 
-      // Puxa o modelo configurado no Render ou usa um padrão funcional da Groq
-      const modeloAtivo = process.env.GROQ_MODEL || "llama-3.3-70b-specdec";
+      // RESERVA SEURA E ATIVA: Se o Render falhar, ele usa o modelo estável da plataforma
+      const modeloAtivo = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
 
       const chatCompletion = await groq.chat.completions.create({
         messages: mensagensAPI,
@@ -72,7 +72,7 @@ async function processarMensagemIA(message, client, mapaMemoria, personalidade, 
       console.error("====== DETALHES DO ERRO ======");
       console.error(error.message || error);
       console.error("==============================");
-      await message.reply(mensagemErro); // Puxa a resposta de erro única de cada uma
+      await message.reply(mensagemErro); 
     }
   }
 }
