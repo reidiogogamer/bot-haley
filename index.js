@@ -1,7 +1,6 @@
 const { Client, GatewayIntentBits, Partials } = require('discord.js');
 const axios = require('axios');
 
-// Inicialização com TODAS as permissões e partições ativas para garantir o recebimento das mensagens
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -19,15 +18,12 @@ client.once('ready', () => {
 });
 
 client.on('messageCreate', async (message) => {
-  // Ignora mensagens enviadas por bots
   if (message.author.bot) return;
 
-  // O bot responderá se for mencionado OU se receber uma mensagem direta (DM)
   const foiMencionado = message.mentions.has(client.user);
   const ehMensagemDireta = !message.guild;
 
   if (foiMencionado || ehMensagemDireta) {
-    // Remove a menção do texto para enviar apenas a pergunta limpa
     const textoLimpo = message.content.replace(`<@${client.user.id}>`, '').trim();
     
     if (!textoLimpo) {
@@ -35,14 +31,12 @@ client.on('messageCreate', async (message) => {
     }
 
     try {
-      // Ativa o indicador visual "Digitando..." no chat do Discord
       await message.channel.sendTyping();
       
-      // Requisição direta via Axios para o endpoint oficial de chat da Groq
       const response = await axios.post(
-        "https://api.groq.com/openai/v1/chat/completions",
+        "https://groq.com",
         {
-          model: "llama-3.3-70b-versatile",
+          model: "llama-3.3-70b-specdec",
           messages: [
             { role: "system", content: PERSONALIDADE_ABIGAIL },
             { role: "user", content: textoLimpo }
@@ -58,7 +52,7 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // Tratamento seguro da árvore de dados do Axios com índice de array
+      // FIX: Adicionado o índice [0] obrigatório para ler o array de escolhas do Axios
       if (response && response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
         const respostaIA = response.data.choices[0].message.content;
         await message.reply(respostaIA.trim());
@@ -81,7 +75,6 @@ client.on('messageCreate', async (message) => {
   }
 });
 
-// Servidor de rede básico obrigatório para evitar o encerramento do contêiner no Render
 const http = require('http');
 http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
