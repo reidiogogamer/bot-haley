@@ -5,45 +5,45 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.MessageContent // Certifique-se de que esta chave continua ativa no Discord Dev Portal
   ]
 });
 
-// Personalidade oficial da Haley
-const PERSONALIDADE_HALEY = "Você é a Haley de Stardew Valley. Vaidosa, adora fotografia, girassóis e moda. Responda sempre em português, com frases curtas e ácidas. Nunca saia do personagem.";
+// Personalidade da Abigail: Totalmente amigável, gamer, sem militância ou chatice
+const PERSONALIDADE_ABIGAIL = "Você é a Abigail de Stardew Valley. Você é extremamente amigável, alegre, fofa e adora mistérios, videogames, tocar flauta e explorar as minas. Você ama conversar com as pessoas e é sempre muito positiva, acolhedora e divertida. Às vezes você brinca sobre comer quartzo ou ametistas de forma descontraída. Responda sempre em português de forma natural, curta e como uma amiga perfeitamente normal. NUNCA seja crítica, militante, ranzinza ou palestrinha. Nunca dê lição de moral e nunca saia do personagem.";
 
 client.once('ready', () => {
-  console.log(`[BOT] Haley conectada com sucesso como: ${client.user.tag}`);
-  console.log(`[CHECK] Token do Discord: ${process.env.DISCORD_TOKEN ? "OK" : "FALTANDO"}`);
-  console.log(`[CHECK] API Key da Groq: ${process.env.GROQ_API_KEY ? "OK" : "FALTANDO"}`);
+  console.log(`\x1b[32m[SUCESSO] Abigail conectada como: ${client.user.tag}\x1b[0m`);
+  console.log(`[CHECK] Token do Discord: ${process.env.DISCORD_TOKEN ? "Configurado ✅" : "FALTANDO ❌"}`);
+  console.log(`[CHECK] API Key da Groq: ${process.env.GROQ_API_KEY ? "Configurado ✅" : "FALTANDO ❌"}`);
 });
 
 client.on('messageCreate', async (message) => {
   // Ignora mensagens de outros bots
   if (message.author.bot) return;
 
-  // Verifica se o bot foi mencionado
+  // Verifica se o bot da Abigail foi mencionado diretamente
   if (message.mentions.has(client.user)) {
     const textoLimpo = message.content.replace(`<@${client.user.id}>`, '').trim();
     
     if (!textoLimpo) {
-      return message.reply("O que foi? 📸");
+      return message.reply("Oi! Tudo bem? Estava aqui pensando em ir explorar as minas... precisa de uma companhia para jogar videogame ou conversar? 🔮⚔️");
     }
 
     try {
-      // Mostra que o bot está digitando no Discord
+      // Mostra o efeito visual de digitação no canal do Discord
       await message.channel.sendTyping();
       
-      // Endpoint oficial de chat da Groq Cloud
+      // Chamada oficial da API de inferência da Groq Cloud
       const response = await axios.post(
         "https://groq.com",
         {
           model: "llama-3.3-70b-versatile",
           messages: [
-            { role: "system", content: PERSONALIDADE_HALEY },
+            { role: "system", content: PERSONALIDADE_ABIGAIL },
             { role: "user", content: textoLimpo }
           ],
-          temperature: 0.7,
+          temperature: 0.8, // Um pouquinho mais alto para ela ser mais criativa e espontânea
           max_tokens: 100
         },
         {
@@ -54,32 +54,37 @@ client.on('messageCreate', async (message) => {
         }
       );
 
-      // Sintaxe clássica e segura para evitar incompatibilidade de versão do Node
-      if (response && response.data && response.data.choices && response.data.choices[0]) {
+      // Validação tradicional de resposta para compatibilidade universal do Node.js
+      if (response && response.data && response.data.choices && response.data.choices.length > 0) {
         const respostaIA = response.data.choices[0].message.content;
         await message.reply(respostaIA.trim());
       } else {
-        await message.reply("Eca... cansei de falar por agora. Volte mais tarde! 📸");
+        await message.reply("Hum... acabei me distraindo com o meu videogame aqui. O que você tinha dito, amigo? 🎮");
       }
 
     } catch (error) {
-      console.error("====== DETALHES DO ERRO DA HALEY ======");
+      console.error("====== EXPEDIÇÃO DE ERRO DA ABIGAIL ======");
       if (error.response) {
-        console.error("Status HTTP:", error.response.status);
-        console.error("Dados do Erro:", JSON.stringify(error.response.data));
+        console.error("Código HTTP recebido da Groq:", error.response.status);
+        console.error("Payload bruto do erro:", JSON.stringify(error.response.data));
       } else {
-        console.error("Mensagem de Erro:", error.message);
+        console.error("Mensagem nativa obtida:", error.message);
       }
-      console.error("=======================================");
+      console.error("==========================================");
       
-      await message.reply("Eca... meu rolo de filme travou de verdade agora. Me pergunte de novo! 📸🌻");
+      await message.reply("Eita, deu uma chuvinha forte aqui nas minas e meu videogame travou! Me pergunta de novo? 🔮");
     }
   }
 });
 
-// Garante que o Render não dê Timeout (Porta obrigatória)
+// Mantém o contêiner do Render ativo escutando a porta padrão
 const http = require('http');
-http.createServer((req, res) => res.end("Haley Viva")).listen(process.env.PORT || 3000);
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end("Abigail Ativa e Operando");
+}).listen(process.env.PORT || 3000, () => {
+  console.log(`[WEB] Servidor de pé na porta ${process.env.PORT || 3000}`);
+});
 
+// Inicializa a conexão com as credenciais da Abigail
 client.login(process.env.DISCORD_TOKEN);
- 
