@@ -43,8 +43,8 @@ async function processarMensagemIA(message, client, mapaMemoria, personalidade, 
         ...historicoUsuario
       ];
 
-      // Proteção: usa o modelo vindo do Render ou assume o novo padrão estável caso esteja em branco
-      const modeloAtivo = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
+      // Puxa o modelo configurado no Render ou usa um padrão funcional da Groq
+      const modeloAtivo = process.env.GROQ_MODEL || "llama-3.3-70b-specdec";
 
       const chatCompletion = await groq.chat.completions.create({
         messages: mensagensAPI,
@@ -72,7 +72,7 @@ async function processarMensagemIA(message, client, mapaMemoria, personalidade, 
       console.error("====== DETALHES DO ERRO ======");
       console.error(error.message || error);
       console.error("==============================");
-      await message.reply("Eita, acho que meu sistema deu uma travadinha! Pode me perguntar de novo? 📋");
+      await message.reply(mensagemErro); // Puxa a resposta de erro única de cada uma
     }
   }
 }
@@ -97,7 +97,7 @@ if (process.env.DISCORD_TOKEN_HALEY) {
       MEMORIA_HALEY,
       PERSONALIDADE_HALEY,
       "Oi! Tudo bem? Estava aqui organizando minhas roupas e limpando a lente da minha câmera... precisa de alguma dica de moda ou quer apenas conversar? 📸👗",
-      "Hum... acabei me distraindo olhando umas revistas de moda aqui. O que você tinha dito, amigo? 💅"
+      "Eita, acho que a bateria da minha câmera acabou e o sistema travou! Pode me perguntar de novo? 📸"
     );
   });
 
@@ -124,7 +124,7 @@ if (process.env.DISCORD_TOKEN_ABIGAIL) {
       MEMORIA_ABIGAIL,
       PERSONALIDADE_ABIGAIL,
       "Oi! Tudo bem? Estava aqui pensando em ir explorar as minas... precisa de algo ou quer só jogar um videogame? 🔮⚔️",
-      "Hum... acabei me distraindo com o meu console aqui. O que você tinha falado? 🎮"
+      "Hum... acabei me distraindo com o meu videogame aqui. O que você tinha dito? 🎮"
     );
   });
 
